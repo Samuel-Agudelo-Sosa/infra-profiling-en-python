@@ -1,3 +1,5 @@
+import time
+
 def es_primo(num):
     """Devuelve True si num es primo. Implementación deliberadamente ingenua."""
     if num < 2:
