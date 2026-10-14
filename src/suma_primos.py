@@ -16,8 +16,13 @@ def suma_primos(n):
 
 
 def suma_primos_rapida(n):
-    """TODO: la misma suma, escrita a partir de lo que mostró el perfil.
+    if n < 2:
+        return 0
+    criba = [True] * n
+    criba[0] = criba[1] = False
+    for p in range(2, int(n**0.5) + 1):
+        if criba[p]:
+            for j in range(p * p, n, p):
+                criba[j] = False
 
-    Tiene que devolver exactamente lo mismo que suma_primos(n) para todo n.
-    """
-    raise NotImplementedError
+    return sum([i for i in range(2, n) if criba[i]])
