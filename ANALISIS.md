@@ -29,26 +29,19 @@ Nombre y código:
 Función que concentra el tiempo, cuántas veces se llama y cuánto suma
 (copiar la línea de `cProfile`):
 
-Qué se cambió en `suma_primos_rapida` y por qué eso ataca lo que el perfil
-mostró:
-
-| Versión | Tiempo con `n = 200000` |
-|---|---:|
-| `suma_primos` |  |
-| `suma_primos_rapida` |  |
-
-Factor:
-
+```text
+  9998    0.004    0.000    0.004    0.000 src/suma_primos.py:3(es_primo)
 ## Parte 3: el producto punto tres veces
 
 | Forma | Tiempo |
 |---|---:|
-| Indexando el arreglo de NumPy |  |
-| Ciclo sobre listas |  |
-| NumPy vectorizado |  |
+| Indexando el arreglo de NumPy | 320.83 |
+| Ciclo sobre listas | 149.41 |
+| NumPy vectorizado | 5.45 |
 
 ¿Por qué indexar el arreglo de NumPy desde Python es la forma más lenta de
 las tres? ¿Qué hace NumPy por debajo que el ciclo de Python no puede hacer?
+¿Por qué indexar un arreglo de NumPy desde Python es la forma más lenta?Unboxing / Conversión de tipos en cada iteración:Un arreglo de NumPy guarda los datos de forma contigua en memoria como enteros puros de C (sin metadatos de Python). Cuando haces a[i] dentro de un ciclo de Python, NumPy debe tomar ese entero de C, instanciar un nuevo objeto PyObject en memoria para Python y pasárselo al intérprete. Crear y destruir millones de objetos de Python dentro del bucle destruye el rendimiento. En cambio, una lista nativa de Python ya tiene las referencias a los objetos PyObject listos para usarse.Carga del motor de Python (Interpreted Loop Overhead):El ciclo for en Python evalúa en cada paso el tipo de variable, revisa límites, realiza llamadas a funciones de extracción e interpreta el bytecode línea por línea.¿Qué hace NumPy por debajo que el ciclo de Python no puede hacer?Cálculo en C / Fortran compilado:NumPy ejecuta las operaciones mediante código compilado directamente en C. Todo el bucle ocurre dentro de C sin tocar el máquina de estado ni el intérprete de Python hasta que termina.Memoria contigua y Caché del CPU:Los elementos de un arreglo de NumPy están ordenados consecutivamente en memoria. Esto permite al procesador aprovechar la caché L1/L2/L3 mediante prefetching (leer bloques contiguos de memoria antes de que se necesiten). Las listas de Python son listas de punteros dispersos por la memoria RAM, provocando cache misses.Vectorización e Instrucciones SIMD:Las CPU modernas tienen instrucciones SIMD (Single Instruction, Multiple Data como AVX-512 o ARM Neon). NumPy utiliza librerías de álgebra lineal optimizadas (como BLAS/LAPACK) que pueden multiplicar y sumar varios números (por ejemplo, 4 u 8 enteros de 64 bits) en un solo ciclo de reloj de la CPU.
 
 ## Parte 4: AVX a mano
 
