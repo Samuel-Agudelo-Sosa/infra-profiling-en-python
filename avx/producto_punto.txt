@@ -1,0 +1,2 @@
+escalar 223.3 ms resultado 1572863
+avx 58.0 ms resultado 1572863

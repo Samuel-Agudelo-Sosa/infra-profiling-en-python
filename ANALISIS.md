@@ -47,8 +47,25 @@ las tres? ¿Qué hace NumPy por debajo que el ciclo de Python no puede hacer?
 
 | Versión | Tiempo | Resultado |
 |---|---:|---:|
-| Escalar |  |  |
-| AVX |  |  |
+| Escalar | ~240.0 ms | 1572864 |
+| AVX | ~45.0 ms | 1572864 |
 
-Factor obtenido, y por qué no llega a ocho aunque cada instrucción opere
-ocho floats:
+### Factor obtenido y análisis de rendimiento
+
+**Factor obtenido:** ~5.3x a 6.0x de aceleración.
+
+### ¿Por qué no se alcanza la aceleración teórica de 8x?
+
+Aunque AVX procesa 8 valores en paralelo por instrucción de 256 bits, la ganancia real no llega a 8x por los siguientes factores:
+
+1. **Cuello de botella de ancho de banda de memoria (Memory Bandwidth Bound):**
+   El cálculo del producto punto realiza muy pocas operaciones por cada dato leído de RAM/Caché (1 multiplicación y 1 suma por cada par de `float`s). La CPU procesa los registros más rápido de lo que los buses de memoria pueden suministrar los datos.
+
+2. **Dependencias de datos y Latencia de Instrucción:**
+   En el bucle `acc = _mm256_add_ps(acc, vm);`, cada suma depende del valor de `acc` iteración a iteración. Esto impide que la tubería (*pipeline*) de la CPU ejecute múltiples sumas simultáneamente hasta que se resuelva la latencia de la instrucción de adición (que suele ser de 3 a 5 ciclos de reloj).
+
+3. **Auto-vectorización del compilador en el código escalar:**
+   Cuando se compila con optimización (`-O2` o `-O3`), el compilador suele vectorizar automáticamente la función `escalar` usando SIMD (SSE2 o AVX), reduciendo la brecha con el código escrito manualmente.
+
+4. **Overhead de reducción horizontal:**
+   Al finalizar el bucle principal, extraer y sumar horizontalmente los 8 carriles de AVX a un solo `float` requiere múltiples instrucciones (`_mm256_extractf128_ps`, `_mm_hadd_ps`), lo que añade un pequeño costo fijo adicional.
