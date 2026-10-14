@@ -1,4 +1,4 @@
-#!/home/samuel/Documents/Programacion/Univalle/Infraestructuras/infra-profiling-en-python/.venv/bin/python3
+#!/home/samuel/Documents/Programacion/Univalle/Infraestructuras/Clase3/infra-profiling-en-python/.venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
